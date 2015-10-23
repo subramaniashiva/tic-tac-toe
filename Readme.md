@@ -29,7 +29,7 @@ Features
  - Though [Modernizr](https://modernizr.com/) - a feature detection library is included, I have not used it much. Will be useful when we want this app to run in older browsers
  - Used Gulp task runner for managing the tasks such as compiling, concatenating files, optimizing resources. You can read more about that [here](http://gulpjs.com/)
  - I have used [Jest](http://facebook.github.io/jest/) for JavaScript unit testing. It is created and maintained by Facebook team.
- - Thought the tic-tac-toe board consists of a 3*3 layout, I have written the logic in a generic way. Just change the variable **MAX_ROWS** in app.js to any other number, you will get a n*n tic-tac-toe board.
+ - Thought the tic-tac-toe board consists of a 3x3 layout, I have written the logic in a generic way. Just change the variable **MAX_ROWS** in app.js to any other number, you will get a nxn tic-tac-toe board.
 
 Future Improvements
 -------------
