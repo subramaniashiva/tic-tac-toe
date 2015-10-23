@@ -73,6 +73,9 @@ body {
 .clear-both {
     clear: both;
 }
+.btn-options {
+    margin: 10px;
+}
 .form-control {
     height: 46px;
     background-color: transparent;
@@ -83,6 +86,7 @@ body {
         margin: 5px;
     }
 }
+/* Styles for points table */
 .table-points {
     tbody {
         tr {
@@ -96,6 +100,7 @@ body {
 .leader-box {
     width: 25%;
 }
+/* Styles for tic tac toe board */
 .tic-board {
     text-align: center;
     color: #000;
@@ -125,9 +130,6 @@ body {
     }
 
 }
-.btn-options {
-    margin: 10px;
-}
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
 
@@ -148,4 +150,31 @@ body {
     .jumbotron {
         border-bottom: 0;
     }
+}
+@media screen and (max-width: 330px) {
+    .container {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .header {
+        h3 {
+            display: block;
+            text-align: center;
+        }
+    }
+    .tic-board {
+        .tic-row {
+            height: 90px;
+            .tic-value {
+                font-size: 24px;
+            }
+        }
+        .tic-button {
+            width: 33%;
+            height: 90px;
+            min-height: 90px;
+            box-sizing: border-box;
+        }
+    }
+    
 }

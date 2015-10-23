@@ -186,7 +186,9 @@
           } else {
             checkLeadingDiag = true;
           }
-        }
+        } else if(rowIndex + columnIndex === boardLength - 1) {
+          checkOtherDiag = true;
+        } 
         if(checkLeadingDiag) {
           for(i =  0; i < boardLength; i++) {
             if((i !== rowIndex) && boardValues[i][i] === symbol) {
@@ -200,7 +202,7 @@
         matchCount = 0;
         if(checkOtherDiag) {
           for(i = 0; i < boardLength; i++) {
-            if((i !== rowIndex) && boardValues[i][2-i] === symbol) {
+            if((i !== rowIndex) && boardValues[i][boardLength - 1 -i] === symbol) {
               matchCount++;
             }
           }
