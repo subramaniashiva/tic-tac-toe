@@ -98,22 +98,79 @@ var TicTacBoard = React.createClass({
       }
     }
   },
+  // Checking the borad status and return true if the game is over
+  // This logic is independent of the number of squares in the tic tac toe board :)
   checkStatus: function(boardIndex, rowIndex, symbol) {
     var gameOver = false;
     var boardValues = this.state.boardValues;
-    if(boardIndex === 0) {
-      if(boardValues[1][rowIndex] === symbol && boardValues[2][rowIndex] === symbol) {
-        return true;
+    var boardLength = boardValues[boardIndex].length;
+    var matchCount;
+    var checkLeadingDiag = false, checkOtherDiag = false;
+    // Check in the same row
+    function checkRow() {
+      matchCount = 0;
+      for(var i = 0; i < boardLength; i++) {
+        if((i !== rowIndex) && boardValues[boardIndex][i] === symbol) {
+          matchCount++;
+        }
       }
-    } else if(boardIndex === 1) {
-      if(boardValues[0][rowIndex] === symbol && boardValues[2][rowIndex] === symbol) {
-        return true;
+      return (matchCount === boardLength - 1);
+    }
+    // Check in the same column
+    function checkColumn() {
+      matchCount = 0;
+      for(var i = 0; i < boardLength; i++) {
+        if((i !== boardIndex) && boardValues[i][rowIndex] === symbol) {
+          matchCount++;
+        }
       }
-
-    } else if(boardIndex === 2) {
-      if(boardValues[0][rowIndex] === symbol && boardValues[1][rowIndex] === symbol) {
-        return true;
+      return (matchCount === boardLength - 1);
+    }
+    // Check in the diagnols
+    function checkDiagnols() {
+      var i;
+      matchCount = 0;
+      if((boardIndex + rowIndex)%2 === 0) {
+        if(boardIndex + rowIndex === boardLength - 1) {
+          checkOtherDiag = true;
+          if((boardIndex*2)+1 === boardLength){
+            checkLeadingDiag = true;
+          }
+        } else {
+          checkLeadingDiag = true;
+        }
       }
+      if(checkLeadingDiag) {
+        for(i =  0; i < boardLength; i++) {
+          if((i !== boardIndex) && boardValues[i][i] === symbol) {
+            matchCount++;
+          }
+        }
+        if(matchCount === boardLength - 1) {
+          return true;
+        }
+      }
+      matchCount = 0;
+      if(checkOtherDiag) {
+        for(i = 0; i < boardLength; i++) {
+          if((i !== boardIndex) && boardValues[i][2-i] === symbol) {
+            matchCount++;
+          }
+        }
+        if(matchCount === boardLength - 1) {
+          return true;
+        }
+      }
+    }
+    
+    if(checkRow()) {
+      return true;
+    }
+    if(checkColumn()) {
+      return true;
+    }
+    if(checkDiagnols()) {
+      return true;
     }
     return gameOver;
   },
@@ -121,7 +178,7 @@ var TicTacBoard = React.createClass({
     this.state.players = this.props.players;
     var rows = this.state.boardValues.map(function(row, index){
       return (
-        <div className="clear-both"><Row key={index} rowValues={row} boardIndex={index} handleClick={this.handleClick} /></div>
+        <div  key={index} className="clear-both"><Row rowValues={row} boardIndex={index} handleClick={this.handleClick} /></div>
       )
     }.bind(this));
     return (
