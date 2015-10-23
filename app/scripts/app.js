@@ -1,18 +1,25 @@
 
 var React = window.React = require('react'),
     ReactDOM = require('react-dom'),
-    mountNode = document.getElementById("app");
+    mountNode = document.getElementById("app"),
+    MAX_ROWS = 3;
 
+var ticTacArray = [], temp = [];
+for(var i = 0; i < MAX_ROWS; i++) {
+  temp = [];
+  for(var j = 0; j < MAX_ROWS; j++) {
+    temp[j] = '';
+  }
+  ticTacArray.push(temp);
+}
 var Box = React.createClass({
   handleClick: function(){
     this.props.handleClick(this.props.rowIndex);
   },
   render: function(){
     return (
-      <div className="tic-button pull-left"
-        onClick={this.handleClick}
-      >
-        {this.props.value}
+      <div className="tic-button" onClick={this.handleClick}>
+        <span className="tic-value">{this.props.value}</span>
       </div>
     );
   }
@@ -29,72 +36,76 @@ var Row = React.createClass({
       );
     }.bind(this));
     return (
-      <div>
+      <div className="clear-both tic-row">
         {boxes}
       </div>
     );
   }
 });
-
 var TicTacBoard = React.createClass({
   getInitialState: function(){
+    var initialArray = JSON.parse(JSON.stringify(ticTacArray));
     return {
       clicks: 0,
-      boardValues: [
-        [' ', ' ', ' '],
-        [' ', ' ', ' '],
-        [' ', ' ', ' ']
-      ],
+      boardValues: initialArray,
       nextValue: 'X',
-      players: []
+      players: [],
+      currentPlayer: ''
     };
   },
+  componentDidMount: function() {
+    this.setState({currentPlayer: this.state.players[0].name});
+  },
   resetBoard: function() {
-    var resetBoard = [
-        [' ', ' ', ' '],
-        [' ', ' ', ' '],
-        [' ', ' ', ' ']
-      ];
-    this.setState({clicks: 0, nextValue: 'X', boardValues : resetBoard});
+    var initialArray = JSON.parse(JSON.stringify(ticTacArray));
+    var resetBoard = initialArray;
+    var currentPlayerName = this.state.players[0].name;
+    this.setState({clicks: 0, nextValue: 'X', boardValues : resetBoard, currentPlayer: currentPlayerName});
   },
   updateScore: function() {
     this.props.updateScore(this.state.players);
   },
   handleClick: function(boardIndex, rowIndex) {
-    var boardValues = this.state.boardValues;
+    var currBoardValues = this.state.boardValues;
     var currPlayers = this.state.players;
-    if(boardValues[boardIndex][rowIndex] === 'X' || boardValues[boardIndex][rowIndex] === 'O') {
+    if(currBoardValues[boardIndex][rowIndex] === 'X' || currBoardValues[boardIndex][rowIndex] === 'O') {
       alert('Not permitted');
     } else {
       var newValue = this.state.nextValue;
-      var winner = 'player2';
-      boardValues[boardIndex][rowIndex] = newValue;
-        this.setState({
-          clicks: this.state.clicks + 1,
-          boardValues: this.state.boardValues,
-          nextValue: this.state.nextValue === 'X' ? 'O' : 'X'
-        });
-      //this.props.gameStarted = false;
+      var winner;
+      currBoardValues[boardIndex][rowIndex] = newValue;
+      var nextPlayer = this.state.players[(this.state.clicks + 1) % 2].name;
+      this.setState({
+        clicks: this.state.clicks + 1,
+        boardValues: currBoardValues,
+        currentPlayer: nextPlayer,
+        nextValue: this.state.nextValue === 'X' ? 'O' : 'X'
+      });
       if(this.checkStatus(boardIndex, rowIndex, newValue)) {
         if(newValue === 'X') {
-          winner = 'player1';
+          winner = currPlayers[0].name;
           currPlayers[0].win += 1;
           currPlayers[1].loss += 1;
         } else {
+          winner = currPlayers[1].name;
           currPlayers[1].win += 1;
           currPlayers[0].loss += 1;
         }
         this.setState({players: currPlayers});
         this.updateScore(this.state.players);
-        this.resetBoard();
-        alert('gameOver. Winner is ' + winner);
-      } else if(this.state.clicks === 8) {
+        var me = this;
+        window.setTimeout(function() {
+           alert('Game Over.\nWinner is ' + winner);
+           me.resetBoard();
+        }, 100);
+        
+      } else if(this.state.clicks === (MAX_ROWS*MAX_ROWS)-1) {
+        alert('Match Draw');
         currPlayers[0].draw += 1;
         currPlayers[1].draw += 1;
         this.setState({players: currPlayers});
         this.updateScore(this.state.players);
         this.resetBoard();
-        alert('Match Draw');
       }
     }
   },
@@ -178,59 +189,76 @@ var TicTacBoard = React.createClass({
     this.state.players = this.props.players;
     var rows = this.state.boardValues.map(function(row, index){
       return (
-        <div  key={index} className="clear-both"><Row rowValues={row} boardIndex={index} handleClick={this.handleClick} /></div>
+          <Row key={index} rowValues={row} boardIndex={index} handleClick={this.handleClick} />
       )
     }.bind(this));
     return (
       <div>
-        {rows}
+        <CurrentPlayer playerName={this.state.currentPlayer} symbol={this.state.nextValue} />
+        <div className="tic-board">
+          {rows}
+        </div>
       </div>
     );
   }
 });
-
-var LeaderBoard = React.createClass({
+var CurrentPlayer = React.createClass({
   render: function() {
-    var setPlayerInfo = function(player, index) {
-      return (
-        <div className="clear-both" key={player.id}>
-          <div className="pull-left leader-box">{player.name}</div>
-          <div className="pull-left leader-box">{player.win}</div>
-          <div className="pull-left leader-box">{player.loss}</div>
-          <div className="pull-left leader-box">{player.draw}</div>
-        </div>);
-    }
     return (
-      <div>
-        <h4>Leader Board</h4>
-        <div className="clear-both">
-          <div className="pull-left leader-box">Name</div>
-          <div className="pull-left leader-box">Wins</div>
-          <div className="pull-left leader-box">Losses</div>
-          <div className="pull-left leader-box">Draws</div>
-        </div>
-        {this.props.players.map(setPlayerInfo)}
+      <div className="alert alert-info" role="alert">
+        <div>Current Player is <strong>{this.props.playerName}</strong>. Symbol for the current player is <strong>{this.props.symbol}</strong></div>
       </div>
       );
   }
 });
+var LeaderBoard = React.createClass({
+  render: function() {
+    var setPlayerInfo = function(player, index) {
+      return (
+        <tr key={player.id}>
+          <td>{player.name}</td>
+          <td>{player.win}</td>
+          <td>{player.loss}</td>
+          <td>{player.draw}</td>
+        </tr>);
+    }
+    return (
+      <div>
+        <h2 className="text-center">Leader Board</h2>
+        <div className="table-responsive">
+          <table className="table table-hover table-points">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Draws</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.props.players.map(setPlayerInfo)}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      );
+  }
+});
+var playerObj = {
+    id: 0,
+    name: "",
+    win: 0,
+    loss: 0,
+    draw: 0
+  };
 var TicTacToeApp = React.createClass({
   getInitialState: function() {
+    var player1 = JSON.parse(JSON.stringify(playerObj));
+    player1.id = 1;
+    var player2 = JSON.parse(JSON.stringify(playerObj));
+    player2.id = 2;
     return {
-        players:[{
-          id: 1,
-          name: "",
-          win: 0,
-          loss: 0,
-          draw: 0
-          }, {
-          id: 2,
-          name: "",
-          win: 0,
-          loss: 0,
-          draw: 0
-          }
-        ],
+        players:[player1, player2],
         player1Name: "",
         player2Name: "",
         currentPage: "index"
@@ -254,19 +282,47 @@ var TicTacToeApp = React.createClass({
   updateScore: function(playersArray) {
     this.setState({players: playersArray});
   },
+  resetGame: function() {
+    var player1 = JSON.parse(JSON.stringify(playerObj));
+    player1.id = 1;
+    var player2 = JSON.parse(JSON.stringify(playerObj));
+    player2.id = 2;
+    this.setState({players: [player1, player2], player1Name: "", player2Name: "", currentPage: "index"});
+  },
+  resetScoreBoard: function() {
+    var player1 = this.state.players[0];
+    player1.win = player1.loss = player1.draw = 0;
+    var player2 = this.state.players[1];
+    player2.win = player2.loss = player2.draw = 0;
+    this.setState({players: [player1, player2]});
+    alert('Leader Board is reset. Please continue the game');
+  },
   render: function() {
     var partial;
     if(this.state.currentPage === 'index') {
-      partial = (<form onSubmit={this.handleSubmit}>
-                  <h3>Enter Players name to start playing</h3>
-                  <input onChange={this.setPlayer1} value={this.state.player1Name} placeholder="Player1 Name" type="text" required />
-                  <input onChange={this.setPlayer2} value={this.state.player2Name} placeholder="Player2 Name" type="text" required />
-                  <button>Submit</button>
+      partial = (<form className="form-inline" onSubmit={this.handleSubmit}>
+                  <h1 className="text-center">Want to play Tic Tac Toe?</h1>
+                  <h3 className="text-center">Please enter the players name to start playing</h3>
+                  <div className="text-center">
+                    <div className="form-group">
+                      <input className="form-control form-name" onChange={this.setPlayer1} value={this.state.player1Name} placeholder="Player1 Name" type="text" required />
+                    </div>
+                    <div className="form-group">
+                      <input className="form-control form-name" onChange={this.setPlayer2} value={this.state.player2Name} placeholder="Player2 Name" type="text" required />
+                    </div>
+                    <div className="form-group">
+                      <button className="btn btn-success btn-lg">Submit</button>
+                    </div>
+                  </div>
                 </form>);
     } else if(this.state.currentPage === 'game') {
       partial = (<div>
                   <LeaderBoard players={this.state.players} />
-                  <TicTacBoard players={this.state.players} updateScore={this.updateScore} />
+                  <TicTacBoard players={this.state.players} updateScore={this.updateScore} currentPlayer={this.state.players[0].name}/>
+                  <div className="text-center">
+                    <button onClick={this.resetScoreBoard} className="btn btn-danger btn-reset btn-options">Reset Leader Board</button>
+                    <button onClick={this.resetGame} className="btn btn-danger btn-reset btn-options">Change Players</button>
+                  </div>
                 </div>)
     }
     return (
@@ -278,4 +334,3 @@ var TicTacToeApp = React.createClass({
 });
 
 ReactDOM.render(<TicTacToeApp />, mountNode);
-
