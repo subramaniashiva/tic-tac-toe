@@ -21,7 +21,7 @@
   /*
     A single box in the Tic Tac Toe board where the user clicks
   */
-  var Box = React.createClass({
+  MYAPP.Box = React.createClass({
     // When the box is clicked, just pass the index of the box to the parent
     handleClick: function(){
       this.props.handleClick(this.props.columnIndex);
@@ -38,7 +38,7 @@
     A single row in the Tic Tac Toe board.
     This will contain the Box Components as stated above
   */
-  var Row = React.createClass({
+  MYAPP.Row = React.createClass({
     // When a box in the row is clicked, pass the row and column index to the parent
     handleClick: function(columnIndex){
       this.props.handleClick(this.props.rowIndex, columnIndex);
@@ -46,7 +46,7 @@
     render: function(){
       var boxes = this.props.rowValues.map(function(value, index){
         return (
-          <Box value={value} key={index} columnIndex={index} handleClick={this.handleClick} />
+          <MYAPP.Box value={value} key={index} columnIndex={index} handleClick={this.handleClick} />
         );
       }.bind(this));
       return (
@@ -60,7 +60,7 @@
     An individual box in the Tic Tac Toe board.
     This will contain the Row components as stated above
   */
-  var TicTacBoard = React.createClass({
+  MYAPP.TicTacBoard = React.createClass({
     getInitialState: function() {
       // Deep copy the ticTacArray
       var initialArray = JSON.parse(JSON.stringify(ticTacArray));
@@ -227,12 +227,12 @@
       this.state.players = this.props.players;
       var rows = this.state.boardValues.map(function(row, index){
         return (
-            <Row key={index} rowValues={row} rowIndex={index} handleClick={this.handleClick} />
+            <MYAPP.Row key={index} rowValues={row} rowIndex={index} handleClick={this.handleClick} />
         )
       }.bind(this));
       return (
         <div>
-          <CurrentPlayer playerName={this.state.currentPlayer} symbol={this.state.nextValue} />
+          <MYAPP.CurrentPlayer playerName={this.state.currentPlayer} symbol={this.state.nextValue} />
           <div className="tic-board">
             {rows}
           </div>
@@ -243,7 +243,7 @@
   /*
     Component for displaying current user's name and his/her symbol
   */
-  var CurrentPlayer = React.createClass({
+  MYAPP.CurrentPlayer = React.createClass({
     render: function() {
       return (
         <div className="alert alert-info" role="alert">
@@ -256,7 +256,7 @@
     Leader Board as a individual component
     Displays win, loss, draw and total
   */
-  var LeaderBoard = React.createClass({
+  MYAPP.LeaderBoard = React.createClass({
     render: function() {
       var setPlayerInfo = function(player, index) {
         return (
@@ -294,7 +294,7 @@
   /*
     The parent component which holds all the above components
   */
-  var TicTacToeApp = React.createClass({
+  MYAPP.TicTacToeApp = React.createClass({
     getInitialState: function() {
       var player1 = JSON.parse(JSON.stringify(playerObj));
       var player2 = JSON.parse(JSON.stringify(playerObj));
@@ -364,8 +364,8 @@
                   </form>);
       } else if(this.state.currentPage === 'game') {
         partial = (<div>
-                    <LeaderBoard players={this.state.players} />
-                    <TicTacBoard players={this.state.players} updateScore={this.updateScore} currentPlayer={this.state.players[0].name}/>
+                    <MYAPP.LeaderBoard players={this.state.players} />
+                    <MYAPP.TicTacBoard players={this.state.players} updateScore={this.updateScore} currentPlayer={this.state.players[0].name}/>
                     <div className="text-center">
                       <button onClick={this.resetScoreBoard} className="btn btn-danger btn-reset btn-options">Reset Leader Board</button>
                       <button onClick={this.resetGame} className="btn btn-danger btn-reset btn-options">Change Players</button>
@@ -381,7 +381,7 @@
   });
   // Function that needs to be called when the program is starting
   MYAPP.init = function() {
-    // On clicking on logo reset the component
+    // On clicking on logo, reset the component
     // Effectively it lands on the index page
     var $logo = document.getElementById('logo');
     $logo.addEventListener('click', function() {
@@ -395,9 +395,12 @@
       ticTacArray.push(temp);
     }
     // Render the App
-    ReactDOM.render(<TicTacToeApp />, mountNode);
+    ReactDOM.render(<MYAPP.TicTacToeApp />, mountNode);
   }
-
-  MYAPP.init();
+  // Won't work in IE 9 :(
+  document.addEventListener('DOMContentLoaded', MYAPP.init);
 
 })(window.MYAPP = window.MYAPP || {});
+
+// export the module. Used in jest testing
+module.exports = MYAPP;
